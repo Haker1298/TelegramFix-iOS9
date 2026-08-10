@@ -283,7 +283,7 @@ static OSStatus replaced_secTrustEvalAnchors(SecTrustRef trust, CFArrayRef ancho
         writeLog(@"SecTrustEvaluate: HOOKED");
         writeLog(@"SecTrustSetPolicies: HOOKED");
         
-        void *sym = dlsym(RTLD_DEFAULT, @"SecTrustEvaluateWithAnchors");
+        void *sym = dlsym(RTLD_DEFAULT, "SecTrustEvaluateWithAnchors");
         if (sym) {
             MSHookFunction(sym, (void *)replaced_secTrustEvalAnchors, (void **)&orig_secTrustEvalAnchors);
             writeLog(@"SecTrustEvaluateWithAnchors: HOOKED");
