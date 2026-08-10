@@ -14,4 +14,4 @@ TelegramFix_LIBRARIES = substrate
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-        install.exec "killall -9 Telegram"
+	install.exec "killall -9 Telegram"
