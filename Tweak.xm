@@ -49,10 +49,10 @@ static void writeLog(NSString *msg) {
 
 #pragma mark - Конфигурация
 
-static NSString *const kSpoofAppVersion = @"10.14.5";
-static NSString *const kSpoofBundleVersion = @"3812";
-static NSString *const kSpoofSystemVersion = @"15.8.3";
-static NSString *const kSpoofDeviceModel = @"iPhone12,8";
+static NSString *const kSpoofAppVersion = @"11.10.1";
+static NSString *const kSpoofBundleVersion = @"4652";
+static NSString *const kSpoofSystemVersion = @"26.4";
+static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 
 #pragma mark - 1. Подмена версии приложения
 
@@ -70,7 +70,8 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,8";
 }
 
 - (NSDictionary *)infoDictionary {
-    NSMutableDictionary *orig = [%orig mutableCopy];
+    NSDictionary *raw = %orig;
+    NSMutableDictionary *orig = [raw mutableCopy];
     if (orig) {
         orig[@"CFBundleShortVersionString"] = kSpoofAppVersion;
         orig[@"CFBundleVersion"] = kSpoofBundleVersion;
@@ -147,6 +148,8 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
     return NO;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 %hook UIAlertView
 
 - (void)show {
@@ -158,6 +161,7 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
 }
 
 %end
+#pragma clang diagnostic pop
 
 %hook UIAlertController
 
