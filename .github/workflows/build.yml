@@ -1,58 +1,42 @@
-name: Build Telegram Fix DEB
+name: Build TelegramFix
 
 on:
   push:
-    branches: [main, master]
-  pull_request:
     branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Theos
+      - name: Setup Theos + ldid
         run: |
-          git clone --depth=1 https://github.com/theos/theos.git $HOME/theos
-          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          export THEOS=$HOME/theos
+          echo "THEOS=$THEOS" >> $GITHUB_ENV
+          echo "PATH=$THEOS/bin:$PATH" >> $GITHUB_ENV
+          git clone --recursive --depth 1 https://github.com/theos/theos.git $THEOS
+          brew install ldid
 
-      - name: Setup iOS SDK
+      - name: Download iOS SDK
         run: |
           mkdir -p $THEOS/sdks
           curl -LO https://github.com/theos/sdks/archive/master.zip
           unzip -q master.zip
-          # Ищем любой iPhoneOS SDK
-          find sdks-master -name 'iPhoneOS*.sdk' -maxdepth 2 -exec cp -r {} $THEOS/sdks/ \;
-          # Если нет — пробуем прямой URL
-          if [ ! -d "$THEOS/sdks/iPhoneOS.sdk" ] && [ ! -d "$THEOS/sdks/iPhoneOS9.3.sdk" ]; then
-            curl -LO https://github.com/xybp888/iOS-SDKs/raw/master/iPhoneOS9.3.sdk.tar.xz 2>/dev/null || true
-            if [ -f iPhoneOS9.3.sdk.tar.xz ]; then
-              tar xf iPhoneOS9.3.sdk.tar.xz -C $THEOS/sdks/ 2>/dev/null || true
-            fi
-          fi
-          ls $THEOS/sdks/
-          # Переименуем если надо чтобы theos нашёл
-          if [ -d "$THEOS/sdks/iPhoneOS9.3.sdk" ] && [ ! -d "$THEOS/sdks/iPhoneOS.sdk" ]; then
-            ln -s iPhoneOS9.3.sdk $THEOS/sdks/iPhoneOS.sdk
-          fi
+          cp -rn sdks-master/*.sdk $THEOS/sdks/ 2>/dev/null || true
 
-      - name: Build DEB
-        env:
-          THEOS: ${{ env.THEOS }}
+      - name: Build .deb
         run: |
-          export THEOS=$HOME/theos
-          make clean 2>/dev/null || true
-          make package FINALPACKAGE=1
+          make clean package
 
-      - name: Upload DEB artifact
+      - name: Upload .deb
         uses: actions/upload-artifact@v4
         with:
           name: TelegramFix-armv7-arm64
           path: packages/*.deb
-          retention-days: 90
+          if-no-files-found: error
 
       - name: Release on tag
         if: startsWith(github.ref, 'refs/tags/v')
