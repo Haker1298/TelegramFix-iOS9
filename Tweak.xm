@@ -1,12 +1,13 @@
 /**
- * Telegram Fix v2.0 for iOS 9
+ * Telegram Fix v2.1 for iOS 9
  * Для Telegram 5.x на iOS 9.3.6
  * 
  * 1. Полный обход SSL/TLS проверки сертификатов
- * 2. Подмена версии приложения (избегает блокировки сервером)
- * 3. Подмена версии системы
+ * 2. Подмена версии приложения (настраиваемая)
+ * 3. Подмена версии системы и устройства (настраиваемые)
  * 4. Блокировка диалогов "обновите приложение"
  * 5. Блокировка перехода в App Store
+ * 6. Настройки в Настройки -> Telegram Fix
  * Author: Haker1928
  */
 
@@ -47,12 +48,23 @@ static void writeLog(NSString *msg) {
     [fh closeFile];
 }
 
-#pragma mark - Конфигурация
+#pragma mark - Настройки
 
-static NSString *const kSpoofAppVersion = @"11.10.1";
-static NSString *const kSpoofBundleVersion = @"4652";
-static NSString *const kSpoofSystemVersion = @"26.4";
-static NSString *const kSpoofDeviceModel = @"iPhone12,1";
+static NSString *kPrefPath = @"/var/mobile/Library/Preferences/com.haker1928.telegramfix.plist";
+
+static NSDictionary *loadPrefs(void) {
+    return [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+}
+
+static NSString *prefString(NSDictionary *prefs, NSString *key, NSString *fallback) {
+    id val = prefs[key];
+    return ([val isKindOfClass:[NSString class]] && [(NSString *)val length] > 0) ? val : fallback;
+}
+
+static BOOL prefBool(NSDictionary *prefs, NSString *key, BOOL fallback) {
+    id val = prefs[key];
+    return (val != nil) ? [val boolValue] : fallback;
+}
 
 #pragma mark - 1. Подмена версии приложения
 
@@ -60,11 +72,14 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 
 - (id)objectForInfoDictionaryKey:(NSString *)key {
     id orig = %orig;
-    if ([key isEqualToString:@"CFBundleShortVersionString"]) {
-        return kSpoofAppVersion;
-    }
-    if ([key isEqualToString:@"CFBundleVersion"]) {
-        return kSpoofBundleVersion;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"enabled", YES)) {
+        if ([key isEqualToString:@"CFBundleShortVersionString"]) {
+            return prefString(prefs, @"spoofAppVersion", @"11.10.1");
+        }
+        if ([key isEqualToString:@"CFBundleVersion"]) {
+            return prefString(prefs, @"spoofBundleVersion", @"4652");
+        }
     }
     return orig;
 }
@@ -72,9 +87,10 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 - (NSDictionary *)infoDictionary {
     NSDictionary *raw = %orig;
     NSMutableDictionary *orig = [raw mutableCopy];
-    if (orig) {
-        orig[@"CFBundleShortVersionString"] = kSpoofAppVersion;
-        orig[@"CFBundleVersion"] = kSpoofBundleVersion;
+    NSDictionary *prefs = loadPrefs();
+    if (orig && prefBool(prefs, @"enabled", YES)) {
+        orig[@"CFBundleShortVersionString"] = prefString(prefs, @"spoofAppVersion", @"11.10.1");
+        orig[@"CFBundleVersion"] = prefString(prefs, @"spoofBundleVersion", @"4652");
     }
     return orig;
 }
@@ -86,15 +102,27 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 %hook UIDevice
 
 - (NSString *)systemVersion {
-    return kSpoofSystemVersion;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"enabled", YES)) {
+        return prefString(prefs, @"spoofiOSVersion", @"26.4");
+    }
+    return %orig;
 }
 
 - (NSString *)model {
-    return kSpoofDeviceModel;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"enabled", YES)) {
+        return prefString(prefs, @"spoofDevice", @"iPhone12,1");
+    }
+    return %orig;
 }
 
 - (NSString *)machine {
-    return kSpoofDeviceModel;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"enabled", YES)) {
+        return prefString(prefs, @"spoofDevice", @"iPhone12,1");
+    }
+    return %orig;
 }
 
 - (NSString *)localizedModel {
@@ -103,17 +131,23 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 
 %end
 
-#pragma mark - 3. SSL bypass (системные функции, точно есть на iOS 9)
+#pragma mark - 3. SSL bypass
 
 %hookf(OSStatus, SecTrustEvaluate, SecTrustRef trust, SecTrustResultType *result) {
-    if (result) {
-        *result = kSecTrustResultProceed;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"sslBypass", YES) && prefBool(prefs, @"enabled", YES)) {
+        if (result) *result = kSecTrustResultProceed;
+        return errSecSuccess;
     }
-    return errSecSuccess;
+    return %orig;
 }
 
 %hookf(OSStatus, SecTrustSetPolicies, SecTrustRef trust, CFTypeRef policies) {
-    return errSecSuccess;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"sslBypass", YES) && prefBool(prefs, @"enabled", YES)) {
+        return errSecSuccess;
+    }
+    return %orig;
 }
 
 #pragma mark - 4. NSURLConnection SSL bypass
@@ -121,7 +155,11 @@ static NSString *const kSpoofDeviceModel = @"iPhone12,1";
 %hook NSURLConnection
 
 + (BOOL)allowsAnyHTTPSCertificateForHost:(NSString *)host {
-    return YES;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"sslBypass", YES) && prefBool(prefs, @"enabled", YES)) {
+        return YES;
+    }
+    return %orig;
 }
 
 %end
@@ -153,9 +191,12 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
 %hook UIAlertView
 
 - (void)show {
-    if (isUpdateAlert(self.title, self.message)) {
-        writeLog([NSString stringWithFormat:@"BLOCKED update alert: %@", self.title]);
-        return;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"blockUpdates", YES) && prefBool(prefs, @"enabled", YES)) {
+        if (isUpdateAlert(self.title, self.message)) {
+            writeLog([NSString stringWithFormat:@"BLOCKED update alert: %@", self.title]);
+            return;
+        }
     }
     %orig;
 }
@@ -167,9 +208,12 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
 
 - (void)viewDidAppear:(BOOL)animated {
     %orig;
-    if (isUpdateAlert(self.title, self.message)) {
-        writeLog([NSString stringWithFormat:@"BLOCKED update sheet: %@", self.title]);
-        [self dismissViewControllerAnimated:NO completion:nil];
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"blockUpdates", YES) && prefBool(prefs, @"enabled", YES)) {
+        if (isUpdateAlert(self.title, self.message)) {
+            writeLog([NSString stringWithFormat:@"BLOCKED update sheet: %@", self.title]);
+            [self dismissViewControllerAnimated:NO completion:nil];
+        }
     }
 }
 
@@ -180,16 +224,19 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
 %hook UIApplication
 
 - (BOOL)openURL:(NSURL *)url {
-    if (url) {
-        NSString *abs = [url absoluteString];
-        NSString *scheme = [url scheme];
-        if ([scheme isEqualToString:@"itms-apps"] ||
-            [scheme isEqualToString:@"itms"] ||
-            [abs rangeOfString:@"itunes.apple.com"].location != NSNotFound ||
-            [abs rangeOfString:@"apps.apple.com"].location != NSNotFound ||
-            [abs rangeOfString:@"id686449807"].location != NSNotFound) {
-            writeLog([NSString stringWithFormat:@"BLOCKED App Store URL"]);
-            return NO;
+    NSDictionary *prefs = loadPrefs();
+    if (prefBool(prefs, @"blockAppStore", YES) && prefBool(prefs, @"enabled", YES)) {
+        if (url) {
+            NSString *abs = [url absoluteString];
+            NSString *scheme = [url scheme];
+            if ([scheme isEqualToString:@"itms-apps"] ||
+                [scheme isEqualToString:@"itms"] ||
+                [abs rangeOfString:@"itunes.apple.com"].location != NSNotFound ||
+                [abs rangeOfString:@"apps.apple.com"].location != NSNotFound ||
+                [abs rangeOfString:@"id686449807"].location != NSNotFound) {
+                writeLog(@"BLOCKED App Store URL");
+                return NO;
+            }
         }
     }
     return %orig;
@@ -198,7 +245,6 @@ static BOOL isUpdateAlert(NSString *title, NSString *message) {
 %end
 
 #pragma mark - 7. Runtime hook для SecTrustEvaluateWithAnchors (iOS 10+)
-// Безопасно: если функции нет, просто пропускаем
 
 typedef OSStatus (*SecTrustEvaluateWithAnchorsType)(SecTrustRef, CFArrayRef, SecTrustResultType *);
 static SecTrustEvaluateWithAnchorsType orig_secTrustEvalAnchors = NULL;
@@ -214,23 +260,34 @@ static OSStatus replaced_secTrustEvalAnchors(SecTrustRef trust, CFArrayRef ancho
     ensureLogDir();
     [@"" writeToFile:logPath() atomically:YES encoding:NSUTF8StringEncoding error:nil];
     
-    writeLog(@"=== Telegram Fix v2.0 LOADED ===");
+    NSDictionary *prefs = loadPrefs();
+    BOOL enabled = prefBool(prefs, @"enabled", YES);
+    
+    writeLog(@"=== Telegram Fix v2.1 LOADED ===");
     writeLog([NSString stringWithFormat:@"Bundle: %@", [[NSBundle mainBundle] bundleIdentifier]]);
     
     NSString *realVer = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     writeLog([NSString stringWithFormat:@"Real app version: %@", realVer]);
-    writeLog([NSString stringWithFormat:@"Spoofing to: TG %@ / iOS %@ / %@", kSpoofAppVersion, kSpoofSystemVersion, kSpoofDeviceModel]);
     
-    writeLog(@"SecTrustEvaluate: HOOKED");
-    writeLog(@"SecTrustSetPolicies: HOOKED");
-    
-    // Безопасный хук SecTrustEvaluateWithAnchors (если есть)
-    void *sym = dlsym(RTLD_DEFAULT, "SecTrustEvaluateWithAnchors");
-    if (sym) {
-        MSHookFunction(sym, (void *)replaced_secTrustEvalAnchors, (void **)&orig_secTrustEvalAnchors);
-        writeLog(@"SecTrustEvaluateWithAnchors: HOOKED via MSHookFunction");
+    if (enabled) {
+        NSString *appVer = prefString(prefs, @"spoofAppVersion", @"11.10.1");
+        NSString *buildVer = prefString(prefs, @"spoofBundleVersion", @"4652");
+        NSString *iosVer = prefString(prefs, @"spoofiOSVersion", @"26.4");
+        NSString *device = prefString(prefs, @"spoofDevice", @"iPhone12,1");
+        writeLog([NSString stringWithFormat:@"Spoofing: TG %@(%@) / iOS %@ / %@", appVer, buildVer, iosVer, device]);
     } else {
-        writeLog(@"SecTrustEvaluateWithAnchors: not present (iOS < 10)");
+        writeLog(@"Tweak DISABLED in settings");
+    }
+    
+    if (prefBool(prefs, @"sslBypass", YES)) {
+        writeLog(@"SecTrustEvaluate: HOOKED");
+        writeLog(@"SecTrustSetPolicies: HOOKED");
+        
+        void *sym = dlsym(RTLD_DEFAULT, @"SecTrustEvaluateWithAnchors");
+        if (sym) {
+            MSHookFunction(sym, (void *)replaced_secTrustEvalAnchors, (void **)&orig_secTrustEvalAnchors);
+            writeLog(@"SecTrustEvaluateWithAnchors: HOOKED");
+        }
     }
     
     writeLog(@"=== ALL HOOKS ACTIVE ===");

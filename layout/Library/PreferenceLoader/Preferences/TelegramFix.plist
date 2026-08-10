@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Telegram Fix v2.0</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>key</key>
+			<string>enabled</string>
+			<key>label</key>
+			<string>Включить твик</string>
+			<key>default</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Подмена версий</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>spoofAppVersion</string>
+			<key>label</key>
+			<string>Версия Telegram</string>
+			<key>default</key>
+			<string>11.10.1</string>
+			<key>validTitles</key>
+			<array>
+				<string>10.14.5</string>
+				<string>11.0.0</string>
+				<string>11.5.2</string>
+				<string>11.10.1</string>
+				<string>12.0.0</string>
+				<string>12.6.1</string>
+				<string>13.0.0</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<string>10.14.5</string>
+				<string>11.0.0</string>
+				<string>11.5.2</string>
+				<string>11.10.1</string>
+				<string>12.0.0</string>
+				<string>12.6.1</string>
+				<string>13.0.0</string>
+			</array>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>spoofBundleVersion</string>
+			<key>label</key>
+			<string>Build номер</string>
+			<key>default</key>
+			<string>4652</string>
+			<key>validTitles</key>
+			<array>
+				<string>3812 (10.14.5)</string>
+				<string>4200 (11.0.0)</string>
+				<string>4352 (11.5.2)</string>
+				<string>4652 (11.10.1)</string>
+				<string>5000 (12.0.0)</string>
+				<string>5400 (12.6.1)</string>
+				<string>6000 (13.0.0)</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<string>3812</string>
+				<string>4200</string>
+				<string>4352</string>
+				<string>4652</string>
+				<string>5000</string>
+				<string>5400</string>
+				<string>6000</string>
+			</array>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>spoofDevice</string>
+			<key>label</key>
+			<string>Устройство</string>
+			<key>default</key>
+			<string>iPhone12,1</string>
+			<key>validTitles</key>
+			<array>
+				<string>iPhone 11</string>
+				<string>iPhone 12</string>
+				<string>iPhone 12 Pro</string>
+				<string>iPhone 13</string>
+				<string>iPhone 13 Pro</string>
+				<string>iPhone 14</string>
+				<string>iPhone 14 Pro</string>
+				<string>iPhone 15</string>
+				<string>iPhone 15 Pro</string>
+				<string>iPhone SE 3</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<string>iPhone12,1</string>
+				<string>iPhone13,2</string>
+				<string>iPhone13,3</string>
+				<string>iPhone14,5</string>
+				<string>iPhone14,2</string>
+				<string>iPhone14,7</string>
+				<string>iPhone14,8</string>
+				<string>iPhone15,4</string>
+				<string>iPhone15,3</string>
+				<string>iPhone14,6</string>
+			</array>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>key</key>
+			<string>spoofiOSVersion</string>
+			<key>label</key>
+			<string>Версия iOS</string>
+			<key>default</key>
+			<string>26.4</string>
+			<key>validTitles</key>
+			<array>
+				<string>iOS 15.0</string>
+				<string>iOS 15.8.3</string>
+				<string>iOS 16.0</string>
+				<string>iOS 16.7.10</string>
+				<string>iOS 17.0</string>
+				<string>iOS 17.7</string>
+				<string>iOS 18.0</string>
+				<string>iOS 18.5</string>
+				<string>iOS 26.4</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<string>15.0</string>
+				<string>15.8.3</string>
+				<string>16.0</string>
+				<string>16.7.10</string>
+				<string>17.0</string>
+				<string>17.7</string>
+				<string>18.0</string>
+				<string>18.5</string>
+				<string>26.4</string>
+			</array>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Функции</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>key</key>
+			<string>sslBypass</string>
+			<key>label</key>
+			<string>SSL Bypass</string>
+			<key>default</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>key</key>
+			<string>blockUpdates</string>
+			<key>label</key>
+			<string>Блокировать обновления</string>
+			<key>default</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>key</key>
+			<string>blockAppStore</string>
+			<key>label</key>
+			<string>Блокировать App Store</string>
+			<key>default</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.haker1928.telegramfix/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Логи: /var/mobile/Library/Logs/TelegramFix.log</string>
+		</dict>
+	</array>
+	</dict>
+</plist>
