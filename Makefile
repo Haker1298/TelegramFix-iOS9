@@ -7,11 +7,11 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = TelegramFix
 
 TelegramFix_FILES = Tweak.xm
-TelegramFix_CFLAGS = -fobjc-arc -Wno-unused-function -Wno-unused-variable
+TelegramFix_CFLAGS = -fobjc-arc -Wno-unused-function -Wno-unused-variable -Wno-deprecated-declarations
 TelegramFix_FRAMEWORKS = Foundation Security UIKit
 TelegramFix_LIBRARIES = substrate
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 Telegram"
+        install.exec "killall -9 Telegram"
